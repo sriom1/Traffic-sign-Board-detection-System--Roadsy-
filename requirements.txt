@@ -1,4 +1,5 @@
 ultralytics
 opencv-python
 streamlit
-streamlit-webrtc opencv-python
+streamlit-webrtc 
+opencv-python
