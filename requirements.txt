@@ -3,3 +3,4 @@ opencv-python
 streamlit
 streamlit-webrtc 
 opencv-python
+libgl1-mesa-glx
