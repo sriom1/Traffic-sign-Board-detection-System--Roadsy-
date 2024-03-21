@@ -38,7 +38,7 @@ if option == 'Image Upload':
             # Draw bounding boxes and class labels on the frame
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
             cv2.putText(frame, str(c), (x1, y1),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.75, (255, 0, 0), 1)
+                        cv2.FONT_HERSHEY_COMPLEX, 0.60, (255, 0, 0), 1)
 
         # Display the frame with objects detected
         st.image(frame, channels="BGR", caption="Detected Objects", use_column_width=True)
@@ -68,7 +68,7 @@ elif option == 'Webcam':
             # Draw bounding boxes and class labels on the frame
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
             cv2.putText(frame, str(c), (x1, y1),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.75, (255, 0, 0), 1)
+                        cv2.FONT_HERSHEY_COMPLEX, 0.60, (255, 0, 0), 1)
 
         # Display the frame with objects detected
         st.image(frame, channels="BGR", caption="Detected Objects", use_column_width=True)
@@ -112,7 +112,7 @@ elif option == 'Video Upload':
                 # Draw bounding boxes and class labels on the frame
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 cv2.putText(frame, str(c), (x1, y1),
-                            cv2.FONT_HERSHEY_COMPLEX, 0.75, (255, 0, 0), 1)
+                            cv2.FONT_HERSHEY_COMPLEX, 0.60, (255, 0, 0), 1)
 
             # Display the frame with objects detected
             st.image(frame, channels="BGR", caption="Detected Objects", use_column_width=True)
