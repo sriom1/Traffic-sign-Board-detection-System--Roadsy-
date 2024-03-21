@@ -1,6 +1,9 @@
-ultralytics
-opencv-python
 streamlit
-streamlit-webrtc 
-opencv-python
-libgl1-mesa-glx
+opencv-python-headless
+textblob
+scipy
+numpy
+pytesseract
+nltk
+pandas
+scikit-learn
