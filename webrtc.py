@@ -1,6 +1,3 @@
-Certainly! Let's modify your code to use **Streamlit-WebRTC** for webcam object detection. I'll provide the updated code below:
-
-```python
 import cv2
 import pandas as pd
 import streamlit as st
@@ -80,13 +77,3 @@ elif option == 'Webcam':
         async_processing=True,
     )
 
-# Add any additional code or UI elements as needed
-```
-
-This modified code integrates Streamlit-WebRTC for webcam object detection. When you select the "Webcam" option, it will start capturing frames from your webcam and display the detected objects with bounding boxes and class labels. Remember to adjust any other parts of your application as necessary. 📹🚦
-
-Source: Conversation with Bing, 25/3/2024
-(1) Live Webcam with Streamlit - Medium. https://z-uo.medium.com/live-webcam-with-streamlit-f32bf68945a4.
-(2) Real-time Object Detection and Tracking with YOLOv8 and Streamlit - GitHub. https://github.com/CodingMantras/yolov8-streamlit-detection-tracking.
-(3) New Component: streamlit-webrtc, a new way to deal with real-time media .... https://discuss.streamlit.io/t/new-component-streamlit-webrtc-a-new-way-to-deal-with-real-time-media-streams/8669/31.
-(4) Streamlit Object Detection with WEBRTC and YOLOv5 - GitHub. https://github.com/VioletVivirand/streamlit-webrtc-yolov5.
