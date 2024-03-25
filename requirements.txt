@@ -8,3 +8,4 @@ nltk
 pandas
 scikit-learn
 ultralytics
+streamlit_webrtc
