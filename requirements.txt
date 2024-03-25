@@ -7,3 +7,4 @@ pytesseract
 nltk
 pandas
 scikit-learn
+ultralytics
