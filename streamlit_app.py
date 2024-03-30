@@ -4,6 +4,22 @@ import streamlit as st
 from ultralytics import YOLO
 import numpy as np
 
+st.markdown("<h1 style='color: white;'>ROADSY: Automated Traffic Sign Detection and Classification</h1>", unsafe_allow_html=True)
+
+
+
+page_element="""
+<style>
+[data-testid="stAppViewContainer"]{
+  background-image: url("https://github.com/srishanmukhaom/roadsy/blob/b8f83ad16897dd668efbb8a29bb4475d904312cc/wp3504268.jpg?raw=true");
+  background-size: cover;
+}
+[data-testid="stHeader"]{
+  background-color: rgba(0,0,0,0);
+}
+</style>
+"""
+st.markdown(page_element, unsafe_allow_html=True)
 # Load the pre-trained YOLO model
 model = YOLO("best.pt")
 
@@ -12,7 +28,7 @@ with open("roadsylabels.txt", "r") as my_file:
     class_list = my_file.read().split("\n")
 
 # Streamlit interface
-st.title('ROADSY: Automated Traffic Sign Detection and Classification')
+#st.title('ROADSY: Automated Traffic Sign Detection and Classification')
 st.write('Choose detection method:')
 
 # Choose detection method
