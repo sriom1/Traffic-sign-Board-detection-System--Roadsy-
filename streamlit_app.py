@@ -1,138 +1,95 @@
+# ROADSY ‑ Streamlit app with Image, Video and **Webcam** support
+# ---------------------------------------------------------------
+# Requirements (run once):
+#   pip install streamlit streamlit‑webrtc ultralytics opencv-python-headless numpy pandas
+
 import cv2
 import pandas as pd
 import streamlit as st
 from ultralytics import YOLO
 import numpy as np
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase
+import av
 
-st.markdown("<h1 style='color: white;'>ROADSY: Automated Traffic Sign Detection and Classification</h1>", unsafe_allow_html=True)
+# ───────────────────────── UI  heading & background ─────────────────────────
+st.markdown(
+    "<h1 style='color:white;'>ROADSY: Automated Traffic Sign Detection and Classification</h1>",
+    unsafe_allow_html=True,
+)
+st.markdown(
+    """
+    <style>
+    [data-testid="stAppViewContainer"]{
+        background-image:url("https://github.com/srishanmukhaom/roadsy/blob/b8f83ad16897dd668efbb8a29bb4475d904312cc/wp3504268.jpg?raw=true");
+        background-size:cover;
+    }
+    [data-testid="stHeader"]{background-color:rgba(0,0,0,0);}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
+# ─────────────────────────  load model & labels  ────────────────────────────
+model = YOLO("best.pt")                       # your trained weights
+with open("roadsylabels.txt") as f:
+    class_list = f.read().splitlines()
 
+# ─────────────────────────── helper for drawing  ────────────────────────────
+def annotate(frame):
+    """run YOLO and draw boxes; returns BGR image"""
+    results = model.predict(frame, verbose=False)
+    if not results:
+        return frame
+    boxes = results[0].boxes.data.cpu().numpy()  # x1,y1,x2,y2,conf,class
+    for x1, y1, x2, y2, *_ , cls in boxes:
+        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0,0,255), 2)
+        cv2.putText(
+            frame,
+            class_list[int(cls)],
+            (int(x1), int(y1) - 5),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.75,
+            (255,0,0),
+            2,
+            cv2.LINE_AA,
+        )
+    return frame
 
-page_element="""
-<style>
-[data-testid="stAppViewContainer"]{
-  background-image: url("https://github.com/srishanmukhaom/roadsy/blob/b8f83ad16897dd668efbb8a29bb4475d904312cc/wp3504268.jpg?raw=true");
-  background-size: cover;
-}
-[data-testid="stHeader"]{
-  background-color: rgba(0,0,0,0);
-}
-</style>
-"""
-st.markdown(page_element, unsafe_allow_html=True)
-# Load the pre-trained YOLO model
-model = YOLO("best.pt")
+# ──────────────────────── streamlit-webrtc class  ───────────────────────────
+class SignDetector(VideoTransformerBase):
+    def transform(self, frame: av.VideoFrame) -> av.VideoFrame:
+        img = frame.to_ndarray(format="bgr24")
+        img = annotate(img)
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-# Read the COCO class list from a file
-with open("roadsylabels.txt", "r") as my_file:
-    class_list = my_file.read().split("\n")
+# ───────────────────────────── main selector  ───────────────────────────────
+option = st.selectbox("Select detection method", ("Image Upload", "Webcam", "Video Upload"))
 
-# Streamlit interface
-#st.title('ROADSY: Automated Traffic Sign Detection and Classification')
-st.write('Choose detection method:')
+# 1️⃣ IMAGE   ---------------------------------------------------------------
+if option == "Image Upload":
+    up = st.file_uploader("Choose an image…", type=["jpg","jpeg","png"])
+    if up:
+        img = cv2.imdecode(np.frombuffer(up.read(), np.uint8), cv2.IMREAD_COLOR)
+        img = annotate(img)
+        st.image(img, channels="BGR", caption="Detected Objects", use_column_width=True)
 
-# Choose detection method
-option = st.selectbox('Select detection method', ('Image Upload', 'Webcam', 'Video Upload'))
+# 2️⃣ WEBCAM  ---------------------------------------------------------------
+elif option == "Webcam":
+    st.write("Allow camera access; stream will appear below.")
+    webrtc_streamer(key="roadsy-webcam", video_transformer_factory=SignDetector)
 
-if option == 'Image Upload':
-    # Upload image through Streamlit
-    uploaded_file = st.file_uploader("Choose an image...", type="jpg")
-
-    if uploaded_file is not None:
-        # Read the image
-        frame = cv2.imdecode(np.frombuffer(uploaded_file.read(), np.uint8), cv2.IMREAD_COLOR)
-        # Perform object detection on the frame
-        results = model.predict(frame)
-        detections = results[0].boxes.data
-        px = pd.DataFrame(detections).astype("float")
-
-        # Display the detected objects and their class labels
-        for index, row in px.iterrows():
-            x1, y1, x2, y2, _, d = map(int, row)
-            c = class_list[d]
-
-            # Draw bounding boxes and class labels on the frame
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(frame, str(c), (x1, y1),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.75, (255, 0, 0), 1)
-
-        # Display the frame with objects detected
-        st.image(frame, channels="BGR", caption="Detected Objects", use_column_width=True)
-
-elif option == 'Webcam':
-    # Start webcam
-    video_capture = cv2.VideoCapture(0)
-    st.write('Press "q" to stop the webcam')
-    #stop_button = st.empty()
-    
-    # Loop to capture frames and display the video with detections
-    while True:
-        ret, frame = video_capture.read()
-        if not ret:
-            break
-
-        # Perform object detection on the frame
-        results = model.predict(frame)
-        detections = results[0].boxes.data
-        px = pd.DataFrame(detections).astype("float")
-
-        # Display the detected objects and their class labels
-        for index, row in px.iterrows():
-            x1, y1, x2, y2, _, d = map(int, row)
-            c = class_list[d]
-
-            # Draw bounding boxes and class labels on the frame
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(frame, str(c), (x1, y1),
-                        cv2.FONT_HERSHEY_COMPLEX, 0.75, (255, 0, 0), 1)
-
-        # Display the frame with objects detected
-        st.image(frame, channels="BGR", caption="Detected Objects", use_column_width=True)
-
-        # Break the loop if "Stop Webcam" button is pressed
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    # Release webcam
-    video_capture.release()
-    cv2.destroyAllWindows()
-
-elif option == 'Video Upload':
-    # Upload video through Streamlit
-    uploaded_file = st.file_uploader("Choose a video...", type=["mp4"])
-
-    if uploaded_file is not None:
-        # Save the uploaded video to a temporary file
-        with open("temp_video.mp4", "wb") as temp_file:
-            temp_file.write(uploaded_file.read())
-
-        # Open the temporary video file using VideoCapture
-        video_capture = cv2.VideoCapture("temp_video.mp4")
-
-        # Process each frame of the video
-        while True:
-            ret, frame = video_capture.read()
+# 3️⃣ VIDEO FILE  -----------------------------------------------------------
+elif option == "Video Upload":
+    up = st.file_uploader("Choose a video…", type=["mp4","mov","avi","mkv"])
+    if up:
+        # save to temp file
+        with open("temp_vid.mp4","wb") as f: f.write(up.read())
+        cap = cv2.VideoCapture("temp_vid.mp4")
+        frame_holder = st.empty()
+        while cap.isOpened():
+            ret, frame = cap.read()
             if not ret:
                 break
-
-            # Perform object detection on the frame
-            results = model.predict(frame)
-            detections = results[0].boxes.data
-            px = pd.DataFrame(detections).astype("float")
-
-            # Display the detected objects and their class labels
-            for index, row in px.iterrows():
-                x1, y1, x2, y2, _, d = map(int, row)
-                c = class_list[d]
-
-                # Draw bounding boxes and class labels on the frame
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-                cv2.putText(frame, str(c), (x1, y1),
-                            cv2.FONT_HERSHEY_COMPLEX, 0.75, (255, 0, 0), 1)
-
-            # Display the frame with objects detected
-            st.image(frame, channels="BGR", caption="Detected Objects", use_column_width=True)
-
-        # Release resources
-        video_capture.release()
-        cv2.destroyAllWindows()
+            frame = annotate(frame)
+            frame_holder.image(frame, channels="BGR", use_column_width=True)
+        cap.release()
