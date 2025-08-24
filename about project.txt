@@ -1,0 +1,31 @@
+Key Issues and Solutions Implemented:
+1. Global Variables Problem
+Your original code loads the model and class list every time a frame is processed. I've fixed this by:
+
+Using @st.cache_resource for the model (loaded once)
+Using @st.cache_data for class labels
+Making them global variables accessible to the VideoTransformer
+
+2. WebRTC Configuration
+Added proper RTC configuration with STUN servers for better connectivity:
+pythonRTC_CONFIGURATION = RTCConfiguration({
+    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+})
+3. Performance Optimization
+
+Added frame resizing for large images
+Added confidence threshold filtering
+Enabled async_processing=True
+Added media stream constraints
+
+4. Error Handling
+
+Added try-catch blocks throughout
+Safe model loading with fallbacks
+Better error messages
+
+5. Deployment Considerations
+For Streamlit Cloud (share.streamlit.io):
+
+Issue: Streamlit Cloud tries to access the camera on the server, not the user's browser
+Solution: Deploy on platforms that support WebRTC properly (like Heroku, Railway, or your own server)
