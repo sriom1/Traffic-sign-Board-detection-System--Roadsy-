@@ -1,4 +1,4 @@
-# Requirements for Python 3.11 (Recommended)
+# Complete Requirements for Python 3.11
 streamlit==1.29.0
 streamlit-webrtc==0.47.1
 opencv-python-headless==4.8.1.78
